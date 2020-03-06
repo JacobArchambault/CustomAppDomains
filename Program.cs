@@ -1,40 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-
+using System.Linq;
+using static System.Console;
+using static System.AppDomain;
 namespace CustomAppDomains
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            Console.WriteLine("***** Fun with Custom App Domains *****\n");
+            WriteLine("***** Fun with Custom App Domains *****\n");
 
             // Show all loaded assemblies in default app domain.
-            AppDomain defaultAD = AppDomain.CurrentDomain;
+            AppDomain defaultAD = CurrentDomain;
             defaultAD.ProcessExit += (o, s) =>
-            {
-                Console.WriteLine("Default AD unloaded!");
-            };
+                WriteLine("Default AD unloaded!");
 
             ListAllAssembliesInAppDomain(defaultAD);
 
             MakeNewAppDomain();
-            Console.ReadLine();
+            ReadLine();
         }
 
-        #region Make new AD
         static void MakeNewAppDomain()
         {
             // Make a new AppDomain in the current process.
-            AppDomain newAD = AppDomain.CreateDomain("SecondAppDomain");
+            AppDomain newAD = CreateDomain("SecondAppDomain");
             newAD.DomainUnload += (o, s) =>
-            {
-                Console.WriteLine("The second app domain has been unloaded!");
-            };
+                WriteLine("The second app domain has been unloaded!");
 
             try
             {
@@ -43,18 +36,16 @@ namespace CustomAppDomains
             }
             catch (FileNotFoundException ex)
             {
-                Console.WriteLine(ex.Message);
+                WriteLine(ex.Message);
             }
 
             // List all assemblies. 
             ListAllAssembliesInAppDomain(newAD);
 
             // Now tear down this app domain.
-            AppDomain.Unload(newAD);
+            Unload(newAD);
         }
-        #endregion
 
-        #region List ASMS in AD
         static void ListAllAssembliesInAppDomain(AppDomain ad)
         {
             // Now get all loaded assemblies in the default app domain. 
@@ -62,14 +53,12 @@ namespace CustomAppDomains
                                    orderby a.GetName().Name
                                    select a;
 
-            Console.WriteLine("***** Here are the assemblies loaded in {0} *****\n",
-              ad.FriendlyName);
+            WriteLine($"***** Here are the assemblies loaded in {ad.FriendlyName} *****\n");
             foreach (var a in loadedAssemblies)
             {
-                Console.WriteLine("-> Name: {0}", a.GetName().Name);
-                Console.WriteLine("-> Version: {0}\n", a.GetName().Version);
+                WriteLine($"-> Name: {a.GetName().Name}");
+                WriteLine($"-> Version: {a.GetName().Version}\n");
             }
         }
-        #endregion
     }
 }
